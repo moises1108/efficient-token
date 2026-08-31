@@ -1,0 +1,36 @@
+name: Claude Auto-Implement Issue
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  claude-fix:
+    if: contains(github.event.issue.labels.*.name, 'claude')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+
+            Review this issue carefully. Implement the fix or feature it
+            describes. When done, open a pull request against the default
+            branch with a clear description summarizing what changed and
+            why, and reference this issue (e.g. "Closes #${{ github.event.issue.number }}").
+          claude_args: |
+            --max-turns 25
+            --allowedTools "Bash(git push:*),Bash(gh pr create:*)"
