@@ -8,6 +8,9 @@ jobs:
   claude-fix:
     if: contains(github.event.issue.labels.*.name, 'claude')
     runs-on: ubuntu-latest
+    concurrency:
+      group: claude-issue-${{ github.event.issue.number }}
+      cancel-in-progress: true
     permissions:
       contents: write
       pull-requests: write
